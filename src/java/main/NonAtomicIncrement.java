@@ -1,18 +1,35 @@
 import api.Race;
-import api.TwoRacers;
+import api.Racer;
 
 public class NonAtomicIncrement {
 
     public static void main(String[] args) throws Exception {
-        final Race<State> race = new Race<State>(State.class, new Racers(), 20000000);
+        final Race<Input, Result> race = new Race<Input, Result>(20000000, Input.class, Result.class,
+            new Racer<Input, Result>() {
+                @Override
+                public void go(Input input, Result result) {
+                    result.r1 = input.i++;
+                }
+            },
+            new Racer<Input, Result>() {
+                @Override
+                public void go(Input input, Result result) {
+                    result.r2 = input.i++;
+                }
+            }
+        );
         final long start = System.currentTimeMillis();
         race.run();
         final long end = System.currentTimeMillis();
         System.out.println(String.format("taken %.2fs", (end-start)/1000.0));
     }
 
-    public static class State {
+    public static class Input {
         int i;
+    }
+
+    public static class Result {
+
         int r1;
         int r2;
 
@@ -20,7 +37,7 @@ public class NonAtomicIncrement {
         public boolean equals(Object o) {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
-            State state = (State) o;
+            Result state = (Result) o;
             return r1 == state.r1 && r2 == state.r2;
 
         }
@@ -38,15 +55,4 @@ public class NonAtomicIncrement {
         }
     }
 
-    private static class Racers implements TwoRacers<State> {
-        @Override
-        public void one(State state) {
-            state.r1 = state.i++;
-        }
-
-        @Override
-        public void two(State state) {
-            state.r2 = state.i++;
-        }
-    }
 }

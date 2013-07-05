@@ -1,75 +1,93 @@
 package api;
 
+import com.google.common.collect.Maps;
+
 import java.lang.reflect.Array;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class Race<S> {
+public class Race<I, R> {
 
-    private final S[] states;
-    private final Thread one, two;
-    private final TwoRacers<S> racers;
+    private final I[] inputs;
+    private final R[] results;
+
+    private final RacerThread[] racerThreads;
 
     private volatile int raceIndex=-1;
-    private volatile int oneIndex=-1;
-    private volatile int twoIndex=-1;
 
-    public Race(Class<S> clazz, TwoRacers<S> racers, int iter) throws Exception {
-        this.racers = racers;
-
-        states = (S[]) Array.newInstance(clazz, iter);
-        for (int i = 0; i < states.length; i++) {
-            states[i] = clazz.newInstance();
-        }
-        one = new FirstRacer();
-        two = new SecondRacer();
+    public Race(int iter, Class<I> inputClass, Class<R> resultClass, Racer<I, R>... racers) throws Exception {
+        inputs = createAndFillArray(iter, inputClass);
+        results = createAndFillArray(iter, resultClass);
+        racerThreads = createRacerThreads(racers);
     }
 
     public void run() {
-        one.start(); two.start();
+        for (RacerThread thread : racerThreads) {
+            thread.start();
+        }
 
-        for (int iter=0; iter < states.length; iter++) {
-            while(oneIndex != iter || twoIndex != iter);
+        for (int iter=0; iter < inputs.length; iter++) {
+            while(!allThreadsAt(iter));
             raceIndex = iter;
         }
 
-        final Map<S, AtomicInteger> aggregated = new HashMap<S, AtomicInteger>();
-        for (S state : states) {
-            AtomicInteger count = aggregated.get(state);
+        final Map<R, AtomicInteger> aggregated = Maps.newHashMap();
+        for (R result : results) {
+            AtomicInteger count = aggregated.get(result);
             if (count == null) {
                 count = new AtomicInteger();
-                aggregated.put(state, count);
+                aggregated.put(result, count);
             }
             count.incrementAndGet();
         }
 
-        for (Map.Entry<S, AtomicInteger> entry : aggregated.entrySet()) {
-            System.out.println(String.format("<%s>:\t%2.4f%%", entry.getKey().toString(), 100.0*entry.getValue().get()/states.length));
+        for (Map.Entry<R, AtomicInteger> entry : aggregated.entrySet()) {
+            System.out.println(String.format("<%s>:\t%2.4f%%", entry.getKey().toString(), 100.0*entry.getValue().get()/results.length));
         }
     }
 
-    private class FirstRacer extends Thread {
+    private RacerThread[] createRacerThreads(Racer<I, R>[] racers) {
+        final RacerThread[] threads = (RacerThread[]) Array.newInstance(RacerThread.class, racers.length);
+        for (int i=0; i<racers.length; i++) {
+            threads[i] = new RacerThread(racers[i]);
+        }
+        return threads;
+    }
+
+    private static <T> T[] createAndFillArray(int length, Class<T> clazz) throws InstantiationException, IllegalAccessException {
+        final T[] array = (T[]) Array.newInstance(clazz, length);
+        for (int i = 0; i < length; i++) {
+            array[i] = clazz.newInstance();
+        }
+        return array;
+    }
+
+    private boolean allThreadsAt(int index) {
+        for (RacerThread racer : racerThreads) {
+            if (racer.index != index) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private class RacerThread extends Thread {
+        private final Racer<I, R> racer;
+        private volatile int index = -1;
+
+        public RacerThread(Racer<I, R> racer) {
+            this.racer = racer;
+        }
+
         @Override
         public void run() {
             while (true) {
-                oneIndex++;
-                if (oneIndex == states.length) return;
-                while(oneIndex != raceIndex);
-                racers.one(states[raceIndex]);
+                index++;
+                if (index == inputs.length) return;
+                while(index != raceIndex);
+                racer.go(inputs[raceIndex], results[raceIndex]);
             }
         }
     }
 
-    private class SecondRacer extends Thread {
-        @Override
-        public void run() {
-            while (true) {
-                twoIndex++;
-                if (twoIndex == states.length) return;
-                while(twoIndex != raceIndex) ;
-                racers.two(states[raceIndex]);
-            }
-        }
-    }
 }
