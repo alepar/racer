@@ -1,17 +1,18 @@
-import api.Race;
-import api.Racer;
+package ru.alepar.racer.examples;
+
+import ru.alepar.racer.Race;
 
 public class LongWrites {
 
     public static void main(String[] args) throws Exception {
         final Race<Input, Result> race = new Race<Input, Result>(1000000, Input.class, Result.class,
-            new Racer<Input, Result>() {
+            new Race.Racer<Input, Result>() {
                 @Override
                 public void go(Input input, Result result) {
                     input.i = -1;
                 }
             },
-            new Racer<Input, Result>() {
+            new Race.Racer<Input, Result>() {
                 @Override
                 public void go(Input input, Result result) {
                     result.r1 = input.i;

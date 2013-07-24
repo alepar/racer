@@ -1,4 +1,4 @@
-package api;
+package ru.alepar.racer;
 
 import com.google.common.collect.Maps;
 
@@ -104,4 +104,7 @@ public class Race<I, R> {
         }
     }
 
+    public static interface Racer<I, R> {
+        void go(I input, R result);
+    }
 }
