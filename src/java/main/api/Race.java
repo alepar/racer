@@ -15,6 +15,7 @@ public class Race<I, R> {
     private final RacerThread[] racerThreads;
 
     private volatile int raceIndex=-1;
+    private int lastStatus;
 
     public Race(int iter, Class<I> inputClass, Class<R> resultClass, Racer<I, R>... racers) throws Exception {
         inputs = createAndFillArray(iter, inputClass);
@@ -27,9 +28,11 @@ public class Race<I, R> {
             thread.start();
         }
 
+        lastStatus = 0;
         for (int iter=0; iter <= inputs.length; iter++) {
             while(!allThreadsAt(iter));
             raceIndex = iter;
+            reportProgress();
         }
 
         final Map<R, AtomicInteger> aggregated = Maps.newHashMap();
@@ -44,6 +47,14 @@ public class Race<I, R> {
 
         for (Map.Entry<R, AtomicInteger> entry : aggregated.entrySet()) {
             System.out.println(String.format("<%s>:\t%2.4f%%", entry.getKey().toString(), 100.0*entry.getValue().get()/results.length));
+        }
+    }
+
+    private void reportProgress() {
+        final int status = (int)(10000.0 * raceIndex / inputs.length);
+        if (status != lastStatus) {
+            System.out.print(String.format("race progress %.2f%%   \r", status / 100.0));
+            lastStatus = status;
         }
     }
 
