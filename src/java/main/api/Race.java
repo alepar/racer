@@ -6,6 +6,7 @@ import java.lang.reflect.Array;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+@SuppressWarnings("StatementWithEmptyBody")
 public class Race<I, R> {
 
     private final I[] inputs;
@@ -26,7 +27,7 @@ public class Race<I, R> {
             thread.start();
         }
 
-        for (int iter=0; iter < inputs.length; iter++) {
+        for (int iter=0; iter <= inputs.length; iter++) {
             while(!allThreadsAt(iter));
             raceIndex = iter;
         }
@@ -46,6 +47,7 @@ public class Race<I, R> {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private RacerThread[] createRacerThreads(Racer<I, R>[] racers) {
         final RacerThread[] threads = (RacerThread[]) Array.newInstance(RacerThread.class, racers.length);
         for (int i=0; i<racers.length; i++) {
@@ -54,6 +56,7 @@ public class Race<I, R> {
         return threads;
     }
 
+    @SuppressWarnings("unchecked")
     private static <T> T[] createAndFillArray(int length, Class<T> clazz) throws InstantiationException, IllegalAccessException {
         final T[] array = (T[]) Array.newInstance(clazz, length);
         for (int i = 0; i < length; i++) {
