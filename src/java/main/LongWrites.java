@@ -1,20 +1,20 @@
 import api.Race;
 import api.Racer;
 
-public class NonAtomicIncrement {
+public class LongWrites {
 
     public static void main(String[] args) throws Exception {
         final Race<Input, Result> race = new Race<Input, Result>(1000000, Input.class, Result.class,
             new Racer<Input, Result>() {
                 @Override
                 public void go(Input input, Result result) {
-                    result.r1 = input.i++;
+                    input.i = -1;
                 }
             },
             new Racer<Input, Result>() {
                 @Override
                 public void go(Input input, Result result) {
-                    result.r2 = input.i++;
+                    result.r1 = input.i;
                 }
             }
         );
@@ -25,33 +25,31 @@ public class NonAtomicIncrement {
     }
 
     public static class Input {
-        int i;
+        long i;
     }
 
     public static class Result {
 
-        int r1;
-        int r2;
+        long r1;
 
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
-            Result state = (Result) o;
-            return r1 == state.r1 && r2 == state.r2;
 
+            Result result = (Result) o;
+
+            return r1 == result.r1;
         }
 
         @Override
         public int hashCode() {
-            int result = r1;
-            result = 31 * result + r2;
-            return result;
+            return (int) (r1 ^ (r1 >>> 32));
         }
 
         @Override
         public String toString() {
-            return r1 + ", " + r2;
+            return "" + r1;
         }
     }
 
