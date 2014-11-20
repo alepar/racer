@@ -1,18 +1,19 @@
 package ru.alepar.racer.examples;
 
 import ru.alepar.racer.Race;
+import ru.alepar.racer.Racer;
 
 public class NonAtomicIncrement {
 
     public static void main(String[] args) throws Exception {
-        final Race<Input, Result> race = new Race<Input, Result>(1000000, Input.class, Result.class,
-            new Race.Racer<Input, Result>() {
+        final Race<Input, Result> race = new Race<>(1000000, 10000, Input.class, Result.class, true,
+            new Racer<Input, Result>() {
                 @Override
                 public void go(Input input, Result result) {
                     result.r1 = input.i++;
                 }
             },
-            new Race.Racer<Input, Result>() {
+            new Racer<Input, Result>() {
                 @Override
                 public void go(Input input, Result result) {
                     result.r2 = input.i++;

@@ -1,19 +1,21 @@
 package ru.alepar.racer.examples;
 
 import ru.alepar.racer.Race;
+import ru.alepar.racer.Racer;
 
 public class IncorrectLabeling {
 
     public static void main(String[] args) throws Exception {
-        final Race<Input, Result> race = new Race<Input, Result>(20000000, Input.class, Result.class,
-            new Race.Racer<Input, Result>() {
+        final Race<Input, Result> race = new Race<>(20000000, Input.class, Result.class,
+            new Racer<Input, Result>() {
                 @Override
                 public void go(Input input, Result result) {
                     input.y = 1;
                     input.x = 1;
                 }
             },
-            new Race.Racer<Input, Result>() {
+            new Racer<Input, Result>() {
+                @SuppressWarnings("UnusedDeclaration") // unused assignment is needed to expose bug
                 @Override
                 public void go(Input input, Result result) {
                     int t = input.y;

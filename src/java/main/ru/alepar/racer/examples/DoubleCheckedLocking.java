@@ -1,14 +1,16 @@
 package ru.alepar.racer.examples;
 
 import ru.alepar.racer.Race;
+import ru.alepar.racer.Racer;
 
 import java.util.HashSet;
 
 public class DoubleCheckedLocking {
 
+    @SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
     public static void main(String[] args) throws Exception {
-        final Race<Input, Result> race = new Race<Input, Result>(10000000, Input.class, Result.class,
-                new Race.Racer<Input, Result>() {
+        final Race<Input, Result> race = new Race<>(10000000, Input.class, Result.class,
+                new Racer<Input, Result>() {
                     @Override
                     public void go(Input input, Result result) {
                         if (input.singleton == null) {
@@ -21,7 +23,7 @@ public class DoubleCheckedLocking {
                         result.o1 = input.singleton;
                     }
                 },
-                new Race.Racer<Input, Result>() {
+                new Racer<Input, Result>() {
                     @Override
                     public void go(Input input, Result result) {
                         if (input.singleton == null) {
@@ -34,7 +36,7 @@ public class DoubleCheckedLocking {
                         result.o2 = input.singleton;
                     }
                 },
-                new Race.Racer<Input, Result>() {
+                new Racer<Input, Result>() {
                     @Override
                     public void go(Input input, Result result) {
                         if (input.singleton == null) {
@@ -47,7 +49,7 @@ public class DoubleCheckedLocking {
                         result.o3 = input.singleton;
                     }
                 },
-                new Race.Racer<Input, Result>() {
+                new Racer<Input, Result>() {
                     @Override
                     public void go(Input input, Result result) {
                         if (input.singleton == null) {
