@@ -2,57 +2,55 @@ package ru.alepar.racer.examples;
 
 import ru.alepar.racer.Race;
 import ru.alepar.racer.Racer;
+import ru.alepar.racer.Resettable;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class LongWrites {
 
     public static void main(String[] args) throws Exception {
-        final Race<Input, Result> race = new Race<>(1000000, Input.class, Result.class,
-            new Racer<Input, Result>() {
-                @Override
-                public void go(Input input, Result result) {
+        final Map<Long, Integer> results = new HashMap<>();
+        final Race<Input, Result> race = new Race<>(10_000_000, 10_000, Input.class, Result.class, true,
+                (result) -> {
+                    Integer count = results.get(result.r1);
+                    if (count == null) {
+                        count = 0;
+                    }
+                    results.put(result.r1, count+1);
+                },
+                (input, result) -> {
                     input.i = -1;
-                }
-            },
-            new Racer<Input, Result>() {
-                @Override
-                public void go(Input input, Result result) {
+                },
+                (input, result) -> {
                     result.r1 = input.i;
                 }
-            }
         );
-        final long start = System.currentTimeMillis();
+        final long start = System.nanoTime();
         race.run();
-        final long end = System.currentTimeMillis();
-        System.out.println(String.format("taken %.2fs", (end-start)/1000.0));
+        final long end = System.nanoTime();
+        System.out.println(String.format("taken %.2fs", (end-start)/1_000_000/1000.0));
+        System.out.println(results);
     }
 
-    public static class Input {
+    public static class Input implements Resettable {
         long i;
+
+        @Override
+        public void reset() {
+            i=0;
+        }
     }
 
-    public static class Result {
+    public static class Result implements Resettable {
 
         long r1;
 
         @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-
-            Result result = (Result) o;
-
-            return r1 == result.r1;
+        public void reset() {
+            r1 = 0;
         }
 
-        @Override
-        public int hashCode() {
-            return (int) (r1 ^ (r1 >>> 32));
-        }
-
-        @Override
-        public String toString() {
-            return "" + r1;
-        }
     }
 
 }
