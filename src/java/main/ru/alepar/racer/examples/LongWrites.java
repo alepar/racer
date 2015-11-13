@@ -11,7 +11,7 @@ public class LongWrites {
 
     public static void main(String[] args) throws Exception {
         final Map<Long, Integer> results = new HashMap<>();
-        final Race<Input, Result> race = new Race<>(10_000_000, 10_000, Input.class, Result.class, true,
+        final Race<Input, Result> race = new Race<>(Config.ITERATIONS_TOTAL, Config.ITERATIONS_PER_BATCH, Input.class, Result.class, true,
                 (result) -> {
                     Integer count = results.get(result.r1);
                     if (count == null) {

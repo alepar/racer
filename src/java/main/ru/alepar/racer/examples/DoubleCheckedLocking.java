@@ -10,7 +10,7 @@ public class DoubleCheckedLocking {
     @SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
     public static void main(String[] args) throws Exception {
         final int[] results = new int[8];
-        final Race<Input, Result> race = new Race<>(50_000_000, 100_000, Input.class, Result.class, true,
+        final Race<Input, Result> race = new Race<>(Config.ITERATIONS_TOTAL, Config.ITERATIONS_PER_BATCH, Input.class, Result.class, true,
                 (Result result) -> {
                     final int idx = (result.bad << 2) + (result.ref << 1) + (result.c1 + result.c2 - 1);
                     results[idx]++;

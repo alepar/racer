@@ -10,7 +10,7 @@ public class NonAtomicIncrement {
 
     public static void main(String[] args) throws Exception {
         final int[] results = new int[2];
-        final Race<Input, Result> race = new Race<>(10_000_000, 10_000, Input.class, Result.class, true,
+        final Race<Input, Result> race = new Race<>(Config.ITERATIONS_TOTAL, Config.ITERATIONS_PER_BATCH, Input.class, Result.class, true,
             (result) -> {
                 results[result.r1 + result.r2] ++;
             },
